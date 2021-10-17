@@ -1,23 +1,27 @@
 from pymongo import MongoClient
-from pymongo.common import RETRY_WRITES
-import yaml
+import pandas as pd
+import numpy as np
 def GetFromMongodb(filter):
     client = MongoClient("mongodb+srv://naveen:itsmenaveen@cluster0.idvt3.mongodb.net/news_articles?retryWrites=true&w=majority")
     collection = client.news_articles.news_article
     cursor = collection.find(filter)
     return cursor
 
-def SaveDataArray(dataList, DataFields):
-    arrayData = [DataFields]
+def SaveDataPandas(dataList, DataFields):
+    arrayData = []
     for data in dataList:
         filteredData = []
         for field in DataFields:
-            filteredData.append(data[field])
+            if(data[field]):
+                filteredData.append(data[field])
+            else:
+                filteredData.append("")
         arrayData.append(filteredData)
 
-    return arrayData
+    data = np.array(arrayData)
+    return pd.DataFrame(data = data,columns=DataFields)
+    
                 
-
-# dataList = GetFromMongodb({})
-# DataFields = ["title","published_date","link","clean_url","summary","media","topic"]
-# SaveDataArray(dataList, DataFields)
+def retriveData(DataFields=["title","published_date","link","clean_url","summary","media","topic"] ):
+    dataList = GetFromMongodb({})
+    return SaveDataPandas(dataList, DataFields)
