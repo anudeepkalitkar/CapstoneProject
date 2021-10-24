@@ -1,0 +1,19 @@
+{
+  "hierarchy": {
+    "name": "Pipeline",
+    "stages": [
+      {
+        "name": "RegexTokenizer"
+      },
+      {
+        "name": "StopWordsRemover"
+      },
+      {
+        "name": "CountVectorizer"
+      },
+      {
+        "name": "StringIndexer"
+      }
+    ]
+  }
+}

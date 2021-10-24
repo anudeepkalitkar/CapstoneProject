@@ -1,0 +1,14 @@
+{
+  "f1_testData": {
+    "evaluator_class": "pyspark.ml.evaluation.MulticlassClassificationEvaluator",
+    "params": {
+      "beta": 1.0,
+      "eps": 1e-15,
+      "labelCol": "label",
+      "metricLabel": 0.0,
+      "metricName": "f1",
+      "predictionCol": "prediction",
+      "probabilityCol": "probability"
+    }
+  }
+}

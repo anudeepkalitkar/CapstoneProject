@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/anudeepk/Desktop/Capstone/CapstoneProject/mlruns/0/a01205d7b30f44a289394e5bc7f19731/artifacts
+end_time: 1635076730720
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: a01205d7b30f44a289394e5bc7f19731
+run_uuid: a01205d7b30f44a289394e5bc7f19731
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1635076707009
+status: 3
+tags: []
+user_id: anudeepk
