@@ -1,3 +1,0 @@
-mlflow
-numpy==1.21.1
-pyspark==3.1.2
