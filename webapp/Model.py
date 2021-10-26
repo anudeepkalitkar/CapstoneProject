@@ -7,19 +7,12 @@ from pyspark.ml.classification import LogisticRegression, RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 from mlflow.pyspark.ml import autolog
-import pandas as pd
-import numpy as np
 autolog(log_models=True, disable=False, exclusive=False, disable_for_unsupported_versions=False, silent=False, log_post_training_metrics=True)
 sc = SparkContext('local')
 spark = SparkSession(sc)
 
 def getData():
     df = retriveData()
-    # df.drop('published_date')
-    # df.drop('link')
-    # df.drop('media')
-    # df.drop('title')
-    # df.drop('clean_url')d
     return spark.createDataFrame(df)
 
 def dataPipeline():
@@ -77,15 +70,3 @@ def mapLabelandTopics(dataSet):
             labels.append(data['label'])
             Mappedlabels[int(data['label'])]= data['topic']
     return Mappedlabels
-
-# LRModel, pipelineFit, mappedLabels = trainModel()
-# data = [["Elon Musk: The THREE questions investors should ask as Tesla CEO prompts SHIB surge",
-# "2021-10-08 23:09:15",
-# "https://www.express.co.uk/finance/city/1503278/Elon-musk-dogecoin-shiba-inu-coin-price-Tesla-CEO-evg",
-# "express.co.uk",
-# "https://cdn.images.express.co.uk/img/dynamic/22/750x445/1503278.jpg","news"]]
-# DataFields=["title","published_date","link","clean_url","summary","media","topic"]
-# data = np.array(data)
-# data = pd.DataFrame(data = data,columns=DataFields)
-# prediction = predictTopic(LRModel,pipelineFit,data)
-# print(mappedLabels[int(prediction)])

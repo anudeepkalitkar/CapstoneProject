@@ -7,58 +7,45 @@ from pyspark.ml.classification import LogisticRegression, RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 from mlflow.pyspark.ml import autolog
-import pickle
 autolog(log_models=True, disable=False, exclusive=False, disable_for_unsupported_versions=False, silent=False, log_post_training_metrics=True)
 sc = SparkContext('local')
 spark = SparkSession(sc)
 
 def getData():
     df = retriveData()
-    df.drop('published_date')
-    df.drop('link')
-    df.drop('media')
-    df.drop('title')
-    df.drop('clean_url')
     return spark.createDataFrame(df)
 
-def buildPipeline():
+def dataPipeline():
     regexTokenizer = RegexTokenizer(inputCol="summary", outputCol="words", pattern="\\W")
     stoppingWords = ["http","https","amp","rt","t","c","the"] 
     stoppingWordsRemover = StopWordsRemover(inputCol="words", outputCol="filtered").setStopWords(stoppingWords)
-    countVectors = CountVectorizer(inputCol="filtered", outputCol="features", vocabSize=10000, minDF=5)
+    countVectors = CountVectorizer(inputCol="filtered", outputCol="features", vocabSize=10000, minDF=0)
     stringIndexing = StringIndexer(inputCol = "topic", outputCol = "label")
     pipeline = Pipeline(stages=[regexTokenizer, stoppingWordsRemover, countVectors, stringIndexing])
     return pipeline
 
 def trainModel():
     dataFrame = getData()
-    pipeline = buildPipeline()
+    pipeline = dataPipeline()
     pipelineFit = pipeline.fit(dataFrame)
     dataSet = pipelineFit.transform(dataFrame)
+    mappedLabels = mapLabelandTopics(dataSet)
     (trainingData, testData) = dataSet.randomSplit([0.7, 0.3], seed = 100)
-    logisticRegression = LogisticRegression(maxIter=15, regParam=0.3, elasticNetParam=0)
+    logisticRegression = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=15, regParam=0.3, elasticNetParam=0)
     LRModel = logisticRegression.fit(trainingData)
     evaluate(LRModel, testData)
-    try:
-        pickle.dump(LRModel, open("LRModel.pkl", "wb"))
-    except:
-        pass
-    return LRModel, trainingData, testData
+    return LRModel, pipelineFit, mappedLabels
 
 def evaluate(LRModel, testData):
     LRPredictions = LRModel.transform(testData)
-    LRPredictions.filter(LRPredictions['prediction'] == 0) \
-    .select("summary","topic","probability","label","prediction") \
-    .orderBy("probability", ascending=False) \
-    .show(n = 10, truncate = 30)
-
     evaluator = MulticlassClassificationEvaluator(predictionCol="prediction")
     print(evaluator.evaluate(LRPredictions))
-
-def predictTopic(query_data, Model):
-    x = list(query_data.dict().values())
-    prediction = Model.predict([x])
-    return prediction
+    
+def predictTopic(Model, pipelineFit, params):
+    params = spark.createDataFrame(params)
+    testData = pipelineFit.transform(params)
+    LRPredictions = Model.transform(testData)
+    return LRPredictions.collect()[-1]['prediction']
 
 def validate(LRModel, trainingData, testData):
     paramGrid = (ParamGridBuilder()
@@ -74,3 +61,24 @@ def validate(LRModel, trainingData, testData):
     cvModel = cv.fit(trainingData)
     predictions = cvModel.transform(testData)
     evaluator.evaluate(predictions)
+
+def mapLabelandTopics(dataSet):
+    labels = []
+    Mappedlabels = {}
+    for data in dataSet.collect():
+        if(data['label'] not in labels):
+            labels.append(data['label'])
+            Mappedlabels[int(data['label'])]= data['topic']
+    return Mappedlabels
+
+# LRModel, pipelineFit, mappedLabels = trainModel()
+# data = [["Elon Musk: The THREE questions investors should ask as Tesla CEO prompts SHIB surge",
+# "2021-10-08 23:09:15",
+# "https://www.express.co.uk/finance/city/1503278/Elon-musk-dogecoin-shiba-inu-coin-price-Tesla-CEO-evg",
+# "express.co.uk",
+# "https://cdn.images.express.co.uk/img/dynamic/22/750x445/1503278.jpg","news"]]
+# DataFields=["title","published_date","link","clean_url","summary","media","topic"]
+# data = np.array(data)
+# data = pd.DataFrame(data = data,columns=DataFields)
+# prediction = predictTopic(LRModel,pipelineFit,data)
+# print(mappedLabels[int(prediction)])
