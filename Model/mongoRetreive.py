@@ -2,8 +2,8 @@ from pymongo import MongoClient
 import pandas as pd
 import numpy as np
 def GetFromMongodb(filter):
-    client = MongoClient("mongodb+srv://naveen:itsmenaveen@cluster0.idvt3.mongodb.net/news_articles?retryWrites=true&w=majority")
-    collection = client.news_articles.news_article
+    client = MongoClient("mongodb+srv://naveen:capstone@group32@cluster0.idvt3.mongodb.net/Capstone?retryWrites=true&w=majority")
+    collection = client.Capstone.news_article
     cursor = collection.find(filter)
     return cursor
 
@@ -25,6 +25,6 @@ def SaveDataPandas(dataList, DataFields):
 def retriveData(DataFields=["title","published_date","link","clean_url","summary","media","topic"] ):
     dataList = GetFromMongodb({})
     return SaveDataPandas(dataList, DataFields)
-data = retriveData()
-with open("test.csv",'w') as file:
-    data.to_csv(file)
+# data = retriveData()
+# with open("test.csv",'w') as file:
+#     data.to_csv(file)

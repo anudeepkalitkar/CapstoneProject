@@ -1,4 +1,4 @@
-from mongoRetreive import retriveData
+from .mongoRetreive import retriveData
 from pyspark.context import SparkContext
 from pyspark.sql.session import SparkSession
 from pyspark.ml import Pipeline
@@ -70,15 +70,3 @@ def mapLabelandTopics(dataSet):
             labels.append(data['label'])
             Mappedlabels[int(data['label'])]= data['topic']
     return Mappedlabels
-
-# LRModel, pipelineFit, mappedLabels = trainModel()
-# data = [["Elon Musk: The THREE questions investors should ask as Tesla CEO prompts SHIB surge",
-# "2021-10-08 23:09:15",
-# "https://www.express.co.uk/finance/city/1503278/Elon-musk-dogecoin-shiba-inu-coin-price-Tesla-CEO-evg",
-# "express.co.uk",
-# "https://cdn.images.express.co.uk/img/dynamic/22/750x445/1503278.jpg","news"]]
-# DataFields=["title","published_date","link","clean_url","summary","media","topic"]
-# data = np.array(data)
-# data = pd.DataFrame(data = data,columns=DataFields)
-# prediction = predictTopic(LRModel,pipelineFit,data)
-# print(mappedLabels[int(prediction)])
