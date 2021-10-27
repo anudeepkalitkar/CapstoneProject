@@ -41,3 +41,55 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
       "
+producer:
+    deploy:
+      replicas: 1
+    build: producer
+    container_name: producerContainer
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - "50030:50030"
+    networks:
+      net_pet:
+        ipv4_address: 192.168.1.1
+  consumer:
+    deploy:
+      replicas: 1
+    build: consumer
+    container_name: consumerContainer
+    hostname: driver
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - "8088:8088"
+      - "8042:8042"
+      - "4041:4041"
+    networks:
+      net_pet:
+        ipv4_address: 192.168.1.2
+
+  webApi:
+    deploy:
+      replicas: 2
+    build: webApi
+    container_name: webApiContainer
+    ports:
+      - "5000:5000"
+    networks:
+      net_pet:
+        ipv4_address: 192.168.1.3
+
+  
+  webapp:
+    deploy:
+      replicas: 1
+    build: webapp
+    container_name: webappContainer
+    ports:
+      - "5500:5500"
+    networks:
+      net_pet:
+        ipv4_address: 192.168.1.4

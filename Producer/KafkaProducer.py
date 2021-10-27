@@ -2,6 +2,7 @@ from RapidAPIFeed import GetRapidAPIFeed
 from RssFeed import GetRssFeedUrls, GetRssFeedData
 from json import dumps
 from kafka import KafkaProducer
+import time
 rssSources=[
     {'name': 'TOI','homePage': 'https://timesofindia.indiatimes.com/',
     'rssPage': 'https://timesofindia.indiatimes.com/rss.cms','rssLinkFilter' : 'rssfeed'},
@@ -26,5 +27,7 @@ def produceData(sourceType, sourceParams):
             if(articles):
                 producer.send(topic = "newsarticles", value = articles)
 
-produceData('rss',rssSources)
-produceData('rapid',queryStringList)
+for t in range(10):
+    produceData('rss',rssSources)
+    produceData('rapid',queryStringList)
+    time.sleep(60)
