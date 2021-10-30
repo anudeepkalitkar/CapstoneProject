@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import pandas as pd
 import numpy as np
 def GetFromMongodb(filter):
-    client = MongoClient("mongodb+srv://naveen:capstone@group32@cluster0.idvt3.mongodb.net/Capstone?retryWrites=true&w=majority")
+    client = MongoClient("mongodb+srv://capstoneuser:Capstone_IIITH@testingcluster.qv0hx.mongodb.net/capstone?retryWrites=true&w=majority")
     collection = client.Capstone.news_article
     cursor = collection.find(filter)
     return cursor

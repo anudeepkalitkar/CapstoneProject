@@ -3,6 +3,7 @@ from RssFeed import GetRssFeedUrls, GetRssFeedData
 from json import dumps
 from kafka import KafkaProducer
 import time
+from mongoInjection import InjectToMongodb
 rssSources=[
     {'name': 'TOI','homePage': 'https://timesofindia.indiatimes.com/',
     'rssPage': 'https://timesofindia.indiatimes.com/rss.cms','rssLinkFilter' : 'rssfeed'},
@@ -31,3 +32,24 @@ for t in range(10):
     produceData('rss',rssSources)
     produceData('rapid',queryStringList)
     time.sleep(60)
+
+
+def sendData(sourceType, sourceParams):
+
+    if('rss' in sourceType.lower()):
+        for rssSource in sourceParams:
+            rssDataSet = GetRssFeedUrls(rssSource)
+            for rssData in rssDataSet:
+                InjectToMongodb(GetRssFeedData(rssData))
+
+    elif('rapid' in sourceType.lower()):
+        for queryString in sourceParams:
+            articles = GetRapidAPIFeed(queryString)
+            if(articles):
+                InjectToMongodb(articles)
+
+# for t in range(10):
+#     sendData('rss',rssSources)
+#     sendData('rapid',queryStringList)
+#     time.sleep(60)
+
