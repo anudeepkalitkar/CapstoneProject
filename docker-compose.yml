@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2'
 services:
 
   zookeeper:
@@ -41,55 +41,72 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
       "
-producer:
+
+  
+  producer:
     deploy:
       replicas: 1
-    build: producer
+    build: ./Producer
     container_name: producerContainer
-    depends_on:
-      - zookeeper
-      - kafka
+    environment:
+      - PRODUCER_ENDPOINT=192.168.0.2
     ports:
       - "50030:50030"
     networks:
-      net_pet:
-        ipv4_address: 192.168.1.1
-  consumer:
-    deploy:
-      replicas: 1
-    build: consumer
-    container_name: consumerContainer
-    hostname: driver
+      vpcbr:
+        ipv4_address: 192.168.0.2
     depends_on:
       - zookeeper
       - kafka
-    ports:
-      - "8088:8088"
-      - "8042:8042"
-      - "4041:4041"
-    networks:
-      net_pet:
-        ipv4_address: 192.168.1.2
 
-  webApi:
+  # consumer:
+  #   deploy:
+  #     replicas: 1
+  #   build: ./Consumer
+  #   container_name: consumerContainer
+  #   hostname: driver
+  #   depends_on:
+  #     - zookeeper
+  #     - kafka
+  #   environment:
+  #     - PRODUCER_ENDPOINT=192.168.0.2
+  #   ports:
+  #     - "8088:8088"
+  #     - "8042:8042"
+  #     - "4041:4041"
+  
+  #   networks:
+  #     vpcbr:
+  #       ipv4_address: 192.168.0.3
+  
+
+  webapi:
     deploy:
-      replicas: 2
-    build: webApi
-    container_name: webApiContainer
+      replicas: 1
+    build: ./webApi
+    container_name: apicontainer
     ports:
       - "5000:5000"
     networks:
-      net_pet:
-        ipv4_address: 192.168.1.3
+      vpcbr:
+        ipv4_address: 192.168.0.4
 
   
   webapp:
     deploy:
       replicas: 1
-    build: webapp
+    build: ./webapp
     container_name: webappContainer
     ports:
       - "5500:5500"
     networks:
-      net_pet:
-        ipv4_address: 192.168.1.4
+      vpcbr:
+        ipv4_address: 192.168.0.5
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 192.168.0.0/16
+         gateway: 192.168.0.1

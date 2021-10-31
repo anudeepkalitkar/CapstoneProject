@@ -73,7 +73,7 @@ docs = FlaskApiSpec(app)
 docs.register(ping)
 docs.register(train)
 docs.register(predict)
-
+# app.get('/train')
 if __name__ == '__main__':
     app.run(debug=True)
 

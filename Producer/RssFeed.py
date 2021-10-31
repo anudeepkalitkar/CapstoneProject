@@ -6,8 +6,9 @@ def GetRssFeedUrls(rssSource):
     content = BeautifulSoup(res.content, features='lxml')
     allLinks = content.find_all('a')
     rssData = []
+    ExceptRSS = ['Most Recent Stories', 'Top Stories']
     for link in allLinks:
-        if(link.text and rssSource['rssLinkFilter'] in link['href']):
+        if(link.text not in ExceptRSS and rssSource['rssLinkFilter'] in link['href']):
             try:
                 rssData.append({'topic': link.text, 'link': link['href'], 'homePage': rssSource['homePage']}) 
             except:

@@ -6,5 +6,5 @@ RUN apt update
 COPY . /app
 WORKDIR /app
 RUN npm install
-
+EXPOSE 5500
 ENTRYPOINT npm start

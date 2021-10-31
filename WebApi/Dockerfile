@@ -1,13 +1,14 @@
-FROM python:3.8-slim
-
+FROM gcr.io/datamechanics/spark:platform-3.1-dm14
 # Install apt dependencies
-RUN apt update
-
+ENV PYSPARK_MAJOR_PYTHON_VERSION=3
 # Install requirements
-COPY ../requirements.txt requirements.txt
+ENV FLASK_RUN_HOST=0.0.0.0
+COPY requirements.txt requirements.txt
+USER root
+RUN apt-get update -y && apt install build-essential -y
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
 COPY . /app
-
+EXPOSE 5000
 WORKDIR /app
 ENTRYPOINT python main.py

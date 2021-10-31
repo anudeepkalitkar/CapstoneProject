@@ -1,6 +1,7 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, collation
 def InjectToMongodb(articleList):
     client = MongoClient("mongodb+srv://capstoneuser:Capstone_IIITH@testingcluster.qv0hx.mongodb.net/capstone?retryWrites=true&w=majority")
-    collection = client.news_articles.news_article
+    collection = client.capstone.news
     for article in articleList:
-        collection.insert_many(article)
+        if(not collection.find_one(article)):
+            collection.insert_one(article)
