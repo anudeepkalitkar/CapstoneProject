@@ -13,7 +13,7 @@ rssSources=[
 queryStringList = ["Elon Musk","Bitcoin", "Rohit Sharma", "Harry Potter", "Egyptian Pyramids", "Covid", "Fifa", "Donald Trump", "Engineering", "Bank Robbery"]
 
 def produceData(sourceType, sourceParams):
-    producer = KafkaProducer(bootstrap_servers=['localhost:9092'],value_serializer=lambda x: dumps(x).encode('utf-8'))
+    producer = KafkaProducer(bootstrap_servers=['kafka:29092'],value_serializer=lambda x: dumps(x).encode('utf-8'))
 
     if('rss' in sourceType.lower()):
         for rssSource in sourceParams:

@@ -4,4 +4,5 @@ def InjectToMongodb(articleList):
     collection = client.capstone.news
     for article in articleList:
         if(not collection.find_one(article)):
+            print(article)
             collection.insert_one(article)

@@ -8,8 +8,8 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 COPY . /producer
-COPY ../Consumer /Consumer
-RUN python ./Consumer/KafkaConsumer.py
+# COPY ../Consumer /Consumer
+# RUN python ./Consumer/KafkaConsumer.py
 
 WORKDIR /producer
 ENTRYPOINT python KafkaProducer.py
