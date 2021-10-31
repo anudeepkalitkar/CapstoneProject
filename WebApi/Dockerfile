@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-EXPOSE 1234
+EXPOSE 5000
 WORKDIR /app
 ENTRYPOINT python main.py
 
