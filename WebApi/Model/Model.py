@@ -10,7 +10,7 @@ from mlflow.pyspark.ml import autolog
 import os
 autolog(log_models=True, disable=False, exclusive=False, disable_for_unsupported_versions=False, silent=False, log_post_training_metrics=True)
 SPARK_URL = os.getenv("SPARK_URL")
-SPARK_URL = SPARK_URL if SPARK_URL else 'localhost'
+SPARK_URL = SPARK_URL if SPARK_URL else 'local'
 sc = SparkContext(SPARK_URL)
 spark = SparkSession(sc)
 
