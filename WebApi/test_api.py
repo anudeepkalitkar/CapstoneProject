@@ -1,5 +1,4 @@
 import os
-
 from werkzeug.wrappers import response
 from main import app
 import unittest
