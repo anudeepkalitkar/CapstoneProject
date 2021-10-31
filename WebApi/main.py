@@ -75,7 +75,7 @@ docs.register(train)
 docs.register(predict)
 # app.get('/train')
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0',port=1234)
 
 
 

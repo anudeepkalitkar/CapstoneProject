@@ -8,7 +8,7 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 from mlflow.pyspark.ml import autolog
 autolog(log_models=True, disable=False, exclusive=False, disable_for_unsupported_versions=False, silent=False, log_post_training_metrics=True)
-sc = SparkContext('local')
+sc = SparkContext('spark://spark-master:7077')
 spark = SparkSession(sc)
 
 def getData():
