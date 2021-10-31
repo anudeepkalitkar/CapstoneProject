@@ -83,7 +83,7 @@ services:
   webapi:
     deploy:
       replicas: 1
-    build: ./webApi
+    build: ./WebApi
     container_name: apicontainer
     ports:
       - "5000:5000"
