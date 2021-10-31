@@ -30,6 +30,7 @@ class FlaskrTestCase(unittest.TestCase):
         response = self.app.get('/train')
         res = response.data.decode('utf8').replace("'", '"')
         resdata = json.loads(res)
+        print(resdata['Success'])
         if(resdata['Success'] == 'True'):
             for data in testData:
                 response = self.app.post('/predict',json = {'searchText': data['summary']})
