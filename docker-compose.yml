@@ -1,97 +1,67 @@
 version: '2'
 services:
-  # zookeeper:
-  #   image: "bitnami/zookeeper:3"
-  #   ports:
-  #     - "2181:2181"
-   
-  #   environment:
-  #     - ALLOW_ANONYMOUS_LOGIN=yes
-
-  # kafka:
-  #   image: "bitnami/kafka:2"
-  #   ports:
-  #     - "9092:9092"
-  #   environment:
-  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-  #     - ALLOW_PLAINTEXT_LISTENER=yes
-  #   depends_on:
-  #     - zookeeper
-  #   healthcheck:
-  #     test:
-  #       ["CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 4
-
-  # init-kafka:
-  #   image: "bitnami/kafka:2"
-  #   depends_on:
-  #     - kafka
-  #   entrypoint: [ '/bin/sh', '-c' ]
-  #   command: |
-  #     "
-  #     # blocks until kafka is reachable
-  #     kafka-topics --bootstrap-server kafka:29092 --list
-
-  #     echo -e 'Creating kafka topics'
-  #     kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic newsarticles --replication-factor 1 --partitions 1
-
-  #     echo -e 'Successfully created the following topics:'
-      # kafka-topics --bootstrap-server kafka:29092 --list
-      # "
-
-
   zookeeper:
-    image: confluentinc/cp-zookeeper:6.1.1
-    ports:
-      - "2181:2181"
+    image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-
-  # reachable on 9092 from the host and on 29092 from inside docker compose
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    healthcheck:
+      test:
+        ["CMD", "curl", "http://localhost:2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
   kafka:
-    image: confluentinc/cp-kafka:6.1.1
+    image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
+        # condition: service_healthy
     ports:
-      - '9092:9092'
-    expose:
-      - '29092'
-    healthcheck:
-      test: ["CMD", "nc", "-z", localhost", "9092", '||', "exit", '1']
-      interval: 1m
-      timeout: 3s
-      retries: 4
-
+      - 29092:29092
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
-      KAFKA_MIN_INSYNC_REPLICAS: '1'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  init-kafka:
-    image: confluentinc/cp-kafka:6.1.1
+    healthcheck:
+      test:
+        ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--create", "--if-not-exists", "--topic", "newsarticles", "--replication-factor", "1", "--partitions", "1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  producer:
+    deploy:
+      replicas: 1
+    build: Producer
+    container_name: producer
     depends_on:
-      - kafka
-    entrypoint: [ '/bin/sh', '-c' ]
-    command: |
-      "
-      # blocks until kafka is reachable
-      kafka-topics --bootstrap-server kafka:29092 --list
-
-      echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic newsarticles --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic my-topic-2 --replication-factor 1 --partitions 1
-
-      echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka:29092 --list
-      "
+      kafka:
+        condition: service_healthy
+    ports:
+      - "50030:50030"
 
 
-  
+  consumer:
+    deploy:
+      replicas: 1
+    build: Consumer
+    container_name: consumer
+    hostname: driver
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+    ports:
+      - "8088:8088"
+      - "8042:8042"
+      - "4041:4041"
+ 
 
   spark-master:
     image: bde2020/spark-master:3.1.1-hadoop3.2
@@ -101,9 +71,8 @@ services:
       - 7077:7077
     environment:
       - INIT_DAEMON_STEP=setup_spark
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.10
+    
+   
      
   spark-worker:
     image: bde2020/spark-worker:3.1.1-hadoop3.2
@@ -115,78 +84,23 @@ services:
       - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
     ports:
       - 8081:8081
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.11
-
-
-  producer:
-    deploy:
-      replicas: 1
-    build: Producer
-    container_name: producer
-    depends_on:
-      - init-kafka
-
-    volumes:
-      - ./datavol:/app/datavol
-    ports:
-      - "50030:50030"
-    environment:
-      KAFKA_BROKER: kafka:9092
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.17
-
-  consumer:
-    deploy:
-      replicas: 1
-    build: Consumer
-    container_name: consumer
-    hostname: driver
-    depends_on:
-      - zookeeper
-      - kafka
-      - init-kafka
-    volumes:
-      - ./datavol:/app/datavol
-    ports:
-      - "8088:8088"
-      - "8042:8042"
-      - "4041:4041"
-    environment:
-      KAFKA_BROKER: kafka:9092
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.18
-
+    
   webapp:
     deploy:
       replicas: 1
     build: webapp
     container_name: webapp
-    volumes:
-      - ./datavol:/app/datavol
     ports:
-      - "5500:5500"
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.19
+      - "80:80"
+ 
+
   webapi:
     deploy:
       replicas: 1
-    build: webapp
-    container_name: webapi_container
-    volumes:
-      - ./datavol:/app/datavol
+    build: Webapi
+    container_name: webapi
+  depends_on:
+      - spark-master
     ports:
-      - "5000:5000"
-    networks:
-      net_pet:
-        ipv4_address: 172.27.1.20
-networks:
-  net_pet:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.27.0.0/16
+      - "1234:1234"
+   
