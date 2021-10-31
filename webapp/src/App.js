@@ -12,7 +12,7 @@ function App() {
     let email = {
         method: 'post',
         contentType: 'application/json',
-        url: "http://0.0.0.0:1234/predict",
+        url: "http://0.0.0.0:5000/predict",
         data: searchItem
       }
       await axios(email).then(res => {

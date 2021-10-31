@@ -97,9 +97,6 @@ services:
       replicas: 1
     build: Webapi
     container_name: webapi
-    environment:
-      - SPARK_URL=spark://spark-master:7077
-
     ports:
-      - "1234:1234"
+      - "5000:5000"
    
