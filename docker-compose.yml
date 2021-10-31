@@ -71,9 +71,7 @@ services:
       - 7077:7077
     environment:
       - INIT_DAEMON_STEP=setup_spark
-    
-   
-     
+
   spark-worker:
     image: bde2020/spark-worker:3.1.1-hadoop3.2
     container_name: spark-worker
@@ -99,8 +97,9 @@ services:
       replicas: 1
     build: Webapi
     container_name: webapi
-  depends_on:
-      - spark-master
+    environment:
+      - SPARK_URL=spark://spark-master:7077
+
     ports:
       - "1234:1234"
    
