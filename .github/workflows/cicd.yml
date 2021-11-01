@@ -22,7 +22,7 @@ jobs:
       - name: Run test
         run: |
           python test_api.py
-        working-directory: WebApi
+        working-directory: Webapi
         
 #   build:
 #     runs-on: ubuntu-latest
