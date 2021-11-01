@@ -19,12 +19,14 @@ def produceData(sourceType, sourceParams):
         for rssSource in sourceParams:
             rssDataSet = GetRssFeedUrls(rssSource)
             for rssData in rssDataSet:
+                print(rssData)
                 producer.send(topic = "newsarticles", value = GetRssFeedData(rssData))
 
     elif('rapid' in sourceType.lower()):
         for queryString in sourceParams:
             articles = GetRapidAPIFeed(queryString)
             if(articles):
+                print(articles)
                 producer.send(topic = "newsarticles", value = articles)
 
 for t in range(10):
@@ -32,7 +34,7 @@ for t in range(10):
         produceData('rss',rssSources)
         produceData('rapid',queryStringList)
     except:
-        pass
+        print("except")
     time.sleep(60)
 
 
